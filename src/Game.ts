@@ -15,4 +15,16 @@ export class Game{
         this.startTime = new Date();
 
     }
+
+    makeMove(socket : WebSocket,move : String){
+        //validation here
+        //is it this user move
+        //is the move valid
+        //update the board
+        //push the move
+        //check if the game is over
+        //send the updated board to both players
+
+        //explore the chess.js library
+    }
 }
