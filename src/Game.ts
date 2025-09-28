@@ -1,5 +1,6 @@
 import { WebSocket } from "ws";
 import { Chess } from "chess.js";
+import { GAME_OVER , MOVE ,INIT_GAME} from "./messages";
 export class Game{
     public player1 : WebSocket;
     public player2 : WebSocket;
@@ -13,7 +14,18 @@ export class Game{
         this.board = new Chess();
         this.moves = [];
         this.startTime = new Date();
-
+        this.player1.send(JSON.stringify({
+            type:INIT_GAME,
+            payload:{
+                color:"white"
+            }
+        }));
+        this.player2.send(JSON.stringify({
+            type:INIT_GAME,
+            payload:{
+                color:"black"
+            }
+        }));
     }
 
     makeMove(socket : WebSocket,move : {
@@ -31,7 +43,38 @@ export class Game{
         try {
             this.board.move(move);
         } catch (error) {
+            console.log(error)
             return
+        }
+
+        if(this.board.isGameOver()){
+            //Send the game over message to both the players
+            this.player1.emit(JSON.stringify({
+                type:GAME_OVER,
+                payload:{
+                    winner:this.board.turn() === "w" ? "black" : "white"
+                }
+            }))
+            this.player2.emit(JSON.stringify({
+                type:GAME_OVER,
+                payload:{
+                    winner:this.board.turn() === "w" ? "black" : "white"
+                }
+            }))
+            
+            return;
+        }
+
+        if(this.board.moves.length%2===0){
+            this.player2.emit(JSON.stringify({
+                type:MOVE,
+                payloaf:move
+            }))
+        }else{
+            this.player1.emit(JSON.stringify({
+                type:MOVE,
+                payload:move
+            }))
         }
         //is it this user move
         //is the move valid
